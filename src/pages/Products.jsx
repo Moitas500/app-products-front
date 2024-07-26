@@ -1,8 +1,8 @@
 import '../styles/products.styles.css'
 import { useSelector } from 'react-redux'
 import CardProduct from "../components/CardProducts"
-import { Button } from 'react-bootstrap'
 import ShoppingCart from '../components/ShoppingCart'
+import ButtonPay from '../components/ButtonPay'
 
 const Products = () => {
     const products = useSelector((state) => state.products)
@@ -26,9 +26,7 @@ const Products = () => {
                 }
             </div>
 
-            <Button variant='success'>
-                Comprar
-            </Button>
+            <ButtonPay/>
         </div>
     )
 }

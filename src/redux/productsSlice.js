@@ -25,9 +25,18 @@ const initialState = [
 
 export const productsSlice = createSlice(
     {
-        name: "prodcuts",
+        name: "products",
         initialState,
+        reducers: {
+            addProduct: (state, action) => {
+                const { name, price, stock } = action.payload
+                state.name = name
+                state.price = price
+                state.stock = stock
+            }
+        }
     }
 )
 
+export const {addProduct} = productsSlice.actions
 export default productsSlice.reducer

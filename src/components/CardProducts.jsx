@@ -1,7 +1,11 @@
 import { Button } from 'react-bootstrap'
 import Card from 'react-bootstrap/Card'
+import { useDispatch } from 'react-redux'
+import { addProductCart } from "../redux/shopingCartSlice.js"
 
 const CardProduct = ({product}) => {
+
+    const dispatch = useDispatch()
 
     return (
         <Card style={{ width: '18rem' }}>
@@ -19,7 +23,7 @@ const CardProduct = ({product}) => {
                     <br></br>
                     Stock: { product.stock }
                 </Card.Text>
-                <Button variant='primary' style={{ width: '100%' }}>
+                <Button variant='primary' style={{ width: '100%' }} onClick={() => dispatch(addProductCart(product))}>
                     Agregar al carrito
                 </Button>
             </Card.Body>
