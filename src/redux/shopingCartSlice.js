@@ -9,10 +9,16 @@ export const shoppingCartSlice = createSlice(
         reducers: {
             addProductCart: (state, action) => {
                 state.push(action.payload)
+            },
+            eraseProduct: (state, action) => {
+                const index = state.findIndex(product => product.id === action.payload.id);
+                if (index !== -1) {
+                    state.splice(index, 1);
+                }
             }
         }
     }
 )
 
-export const { addProductCart } = shoppingCartSlice.actions
+export const { addProductCart, eraseProduct } = shoppingCartSlice.actions
 export default shoppingCartSlice.reducer

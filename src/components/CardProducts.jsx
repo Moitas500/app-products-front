@@ -1,7 +1,7 @@
 import { Button } from 'react-bootstrap'
 import Card from 'react-bootstrap/Card'
 import { useDispatch } from 'react-redux'
-import { addProductCart } from "../redux/shopingCartSlice.js"
+import { addProductCart, eraseProduct } from "../redux/shopingCartSlice.js"
 
 const CardProduct = ({product}) => {
 
@@ -25,6 +25,9 @@ const CardProduct = ({product}) => {
                 </Card.Text>
                 <Button variant='primary' style={{ width: '100%' }} onClick={() => dispatch(addProductCart(product))}>
                     Agregar al carrito
+                </Button>
+                <Button variant='danger' onClick={() => dispatch(eraseProduct(product))}>
+                    Eliminar del carrito
                 </Button>
             </Card.Body>
         </Card>
