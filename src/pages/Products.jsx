@@ -1,6 +1,7 @@
 import '../styles/products.styles.css'
 import CardProduct from "../components/CardProducts"
 import { Button } from 'react-bootstrap'
+import ShoppingCart from '../components/ShoppingCart'
 
 const products = [
     {
@@ -29,19 +30,24 @@ const Products = () => {
 
     return (
         <div className='container'>
-            <h2>
-                Ofimatica
-            </h2>
+
+            <div className = 'container-header'>
+                <h2>
+                    Ofimatica
+                </h2>
+
+                <ShoppingCart/>
+            </div>
 
             <div className="container-products">
                 {
-                    products.map( product => (
-                        <CardProduct product={product}/>
+                    products.map( (product, index) => (
+                        <CardProduct product={product} key={index}/>
                     ))
                 }
             </div>
 
-            <Button variant='primary'>
+            <Button variant='success'>
                 Comprar
             </Button>
         </div>
