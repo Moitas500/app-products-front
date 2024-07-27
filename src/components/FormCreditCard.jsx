@@ -1,5 +1,5 @@
-import { useState } from "react"
 import { Button, Form } from "react-bootstrap"
+import { useForm } from "react-hook-form"
 import { useDispatch, useSelector } from "react-redux"
 import { changeStatusTransaction } from "../redux/paymentSlice"
 import environment from "../environments/environment"
@@ -11,12 +11,7 @@ const FormCreditCard = () => {
     const payment = useSelector((state) => state.payment)
     const cartShopping = useSelector((state) => state.cart)
 
-    const [name, setName] = useState('')
-    const [number, setNumber] = useState('')
-    const [cvc, setCSV] = useState('')
-    const [month, setMonth] = useState('')
-    const [year, setYear] = useState('')
-    const [installments, setinstallments] = useState('')
+    const { register, handleSubmit } = useForm()
 
     const sha256 = async (chain) => {
         const encondedText = new TextEncoder().encode(chain);
@@ -31,7 +26,7 @@ const FormCreditCard = () => {
         return random
     }
 
-    const submit = () => {
+    const submit = (data) => {
         dispatch(changeStatusTransaction(true))
 
         fetch(`${environment.apiUrlWompi}/tokens/cards`, {
@@ -40,20 +35,20 @@ const FormCreditCard = () => {
                 'Authorization': `Bearer ${environment.keyPublic}`
             },
             body: JSON.stringify({
-                number,
-                cvc,
-                exp_month: month,
-                exp_year: year,
-                card_holder: name
+                number: data.number,
+                cvc: data.cvc,
+                exp_month: data.month,
+                exp_year: data.year,
+                card_holder: data.name
             })
         })
             .then((response) => response.json())
-            .then((data) => {
-                makeTransaction(data)
+            .then((res) => {
+                makeTransaction(res, data)
             })
     }
 
-    const makeTransaction = async (data) => {
+    const makeTransaction = async (res, data) => {
         const reference = createReference()
         const signature = await sha256(`${reference}${cartShopping.totalInCents}${payment.currency}${payment.integrityKey}`)
 
@@ -68,11 +63,11 @@ const FormCreditCard = () => {
                 currency: payment.currency,
                 signature: signature,
                 reference: reference,
-                customer_email: "camilofour1@gmail.com",
+                customer_email: data.email,
                 payment_method: {
                     type: "CARD",
-                    installments: installments,
-                    token: data.data.id
+                    installments: data.installments,
+                    token: res.data.id
                 }
             })
         })
@@ -84,7 +79,7 @@ const FormCreditCard = () => {
     }
 
     return (
-        <Form style={{
+        <Form onSubmit={handleSubmit(submit)} style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center"
@@ -93,20 +88,22 @@ const FormCreditCard = () => {
                 width: "100%"
             }}>
                 <Form.Label>Nombre completo</Form.Label>
-                <Form.Control type="text" placeholder="Escriba el nombre completo" value={name} onChange={(event) => setName(event.target.value)}/>
+                <Form.Control type="text" placeholder="Escriba el nombre completo" {...register('name', {required: true})}/>
+                <Form.Label>Email</Form.Label>
+                <Form.Control type="email" placeholder="Email" {...register('email', {required: true})}/>
                 <Form.Label>Numero</Form.Label>
-                <Form.Control type="text" placeholder="4000 0000 0000" value={number} onChange={(event) => setNumber(event.target.value)}/>
+                <Form.Control type="text" placeholder="4000 0000 0000" {...register('number', {required: true})}/>
                 <Form.Label>CSV</Form.Label>
-                <Form.Control type="text" placeholder="000" value={cvc} onChange={(event) => setCSV(event.target.value)}/>
+                <Form.Control type="text" placeholder="000" {...register('cvc', {required: true})}/>
                 <Form.Label>Mes de fecha de expedicion</Form.Label>
-                <Form.Control type="text" placeholder="00" value={month} onChange={(event) => setMonth(event.target.value)}/>
+                <Form.Control type="text" placeholder="00" {...register('month', {required: true})}/>
                 <Form.Label>Año de expedicion</Form.Label>
-                <Form.Control type="text" placeholder="00" value={year} onChange={(event) => setYear(event.target.value)}/>
+                <Form.Control type="text" placeholder="00" {...register('year', {required: true})}/>
                 <Form.Label>Numero de cuotas</Form.Label>
-                <Form.Control type="text" placeholder="00" value={installments} onChange={(event) => setinstallments(event.target.value)}/>
+                <Form.Control type="text" placeholder="00" {...register('installments', {required: true})}/>
             </Form.Group>
 
-            <Button variant="primary" onClick={submit} disabled={payment.isTransactionMade}>
+            <Button variant="primary" type="submit" disabled={payment.isTransactionMade}>
                 Pay
             </Button>
         </Form>
