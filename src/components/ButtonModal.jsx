@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Button, Form, Modal } from "react-bootstrap"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { addAcceptanceToken } from "../redux/paymentSlice.js"
 import environment from "../environments/environment.js"
 import FormCreditCard from "./FormCreditCard.jsx"
@@ -8,6 +8,9 @@ import FormCreditCard from "./FormCreditCard.jsx"
 const ButtonModal = () => {
 
     const dispatch = useDispatch()
+
+    const payment = useSelector((state) => state.payment)
+    const cartShopping = useSelector((state) => state.cart)
 
     const [show, setShow] = useState(false)
     const [isChecked, setChecked] = useState(false)
@@ -40,12 +43,12 @@ const ButtonModal = () => {
                 </Form.Check>
             </Form>
 
-            <Button variant="success" onClick={() => setShow(true)} disabled = {!isChecked}>
+            <Button variant="success" onClick={() => setShow(true)} disabled = {!isChecked || !(cartShopping.cart.length > 0)}>
                 Pay with credit card
             </Button>
 
-            <Modal show={show} onHide={() => setShow(false)}>
-                <Modal.Header closeButton>
+            <Modal backdrop="static" show={show} onHide={() => setShow(false)}>
+                <Modal.Header>
                     <Modal.Title>Credit card info</Modal.Title>
                 </Modal.Header>
 
@@ -56,7 +59,9 @@ const ButtonModal = () => {
                 </Modal.Body>
 
                 <Modal.Footer>
-                    <Button variant="danger">Close</Button>
+                    <Button variant="danger" disabled = {payment.isTransactionMade} onClick={() => setShow(false)}>
+                        Close
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </>

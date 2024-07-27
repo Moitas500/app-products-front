@@ -1,11 +1,15 @@
 import { useState } from "react"
 import { Button, Form } from "react-bootstrap"
+import { useDispatch, useSelector } from "react-redux"
+import { changeStatusTransaction } from "../redux/paymentSlice"
 import environment from "../environments/environment"
-import { useSelector } from "react-redux"
 
 const FormCreditCard = () => {
 
+    const dispatch = useDispatch()
+
     const payment = useSelector((state) => state.payment)
+    const cartShopping = useSelector((state) => state.cart)
 
     const [name, setName] = useState('')
     const [number, setNumber] = useState('')
@@ -18,11 +22,18 @@ const FormCreditCard = () => {
         const encondedText = new TextEncoder().encode(chain);
         const hashBuffer = await crypto.subtle.digest("SHA-256", encondedText);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
-        console.log(hashArray.map((b) => b.toString(16).padStart(2, "0")).join(""))
-        return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+        const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+        return hashHex
+    }
+
+    const createReference = () => {
+        const random = Math.random().toString(36).substring(2,12)
+        return random
     }
 
     const submit = () => {
+        dispatch(changeStatusTransaction(true))
+
         fetch(`${environment.apiUrlWompi}/tokens/cards`, {
             method: "POST",
             headers: {
@@ -38,28 +49,38 @@ const FormCreditCard = () => {
         })
             .then((response) => response.json())
             .then((data) => {
-                fetch(`${environment.apiUrlWompi}/transactions`, {
-                    method: "POST",
-                    headers: {
-                        'Authorization': `Bearer ${environment.keyPublic}`
-                    },
-                    body: JSON.stringify({
-                        acceptance_token: `${payment.acceptanceToken}`,
-                        amount_in_cents: 1000000,
-                        currency: "COP",
-                        signature: `${sha256('ABCABVBC100000COPstagtest_integrity_nAIBuqayW70XpUqJS4qf4STYiISd89Fp')}`,
-                        reference: "dasdas",
-                        customer_email: "camilofour1@gmail.com",
-                        payment_method: {
-                            type: "CARD",
-                            installments: installments,
-                            token: data.data.id
-                        }
-                    })
-                })
-                .then((response) => response.json())
-                .then((data2) => console.log(data2))
+                makeTransaction(data)
             })
+    }
+
+    const makeTransaction = async (data) => {
+        const reference = createReference()
+        const signature = await sha256(`${reference}${cartShopping.totalInCents}${payment.currency}${payment.integrityKey}`)
+
+        fetch(`${environment.apiUrlWompi}/transactions`, {
+            method: "POST",
+            headers: {
+                'Authorization': `Bearer ${environment.keyPublic}`
+            },
+            body: JSON.stringify({
+                acceptance_token: `${payment.acceptanceToken}`,
+                amount_in_cents: cartShopping.totalInCents,
+                currency: payment.currency,
+                signature: signature,
+                reference: reference,
+                customer_email: "camilofour1@gmail.com",
+                payment_method: {
+                    type: "CARD",
+                    installments: installments,
+                    token: data.data.id
+                }
+            })
+        })
+        .then((response) => response.json())
+        .then((data2) => {
+            console.log(data2)
+            dispatch(changeStatusTransaction(false))
+        })
     }
 
     return (
@@ -85,7 +106,7 @@ const FormCreditCard = () => {
                 <Form.Control type="text" placeholder="00" value={installments} onChange={(event) => setinstallments(event.target.value)}/>
             </Form.Group>
 
-            <Button variant="primary" onClick={submit} >
+            <Button variant="primary" onClick={submit} disabled={payment.isTransactionMade}>
                 Pay
             </Button>
         </Form>
