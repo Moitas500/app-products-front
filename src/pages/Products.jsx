@@ -2,7 +2,7 @@ import '../styles/products.styles.css'
 import { useSelector } from 'react-redux'
 import CardProduct from "../components/CardProducts"
 import ShoppingCart from '../components/ShoppingCart'
-import ButtonPay from '../components/ButtonPay'
+import ButtonModal from '../components/ButtonModal'
 
 const Products = () => {
     const products = useSelector((state) => state.products)
@@ -26,7 +26,7 @@ const Products = () => {
                 }
             </div>
 
-            <ButtonPay/>
+            <ButtonModal/>
         </div>
     )
 }
